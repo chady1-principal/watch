@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101827">
+    <meta name="description" content="어르신도 편하게 볼 수 있는 큰 글씨 시계">
+    <title>큰 글씨 시계</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        --page: #101827;
+        --surface: #1b2738;
+        --surface-hover: #26364b;
+        --text: #f7f9fc;
+        --muted: #c5d0de;
+        --accent: #8ee3d1;
+        --border: #506078;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-width: 280px;
+        min-height: 100vh;
+        min-height: 100dvh;
+        margin: 0;
+        padding: clamp(1rem, 4vw, 3.5rem);
+        display: grid;
+        place-items: center;
+        color: var(--text);
+        background:
+          radial-gradient(ellipse at 50% 38%, #25344a 0%, transparent 58%),
+          var(--page);
+      }
+
+      button {
+        min-height: 3.5rem;
+        padding: 0.75rem 1.2rem;
+        border: 2px solid var(--border);
+        border-radius: 1rem;
+        color: var(--text);
+        background: var(--surface);
+        font: inherit;
+        font-size: 1.1rem;
+        font-weight: 700;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+
+      button:hover {
+        background: var(--surface-hover);
+      }
+
+      button:focus-visible {
+        outline: 4px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      button[aria-pressed="true"] {
+        border-color: var(--accent);
+        color: var(--accent);
+      }
+
+      button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      main {
+        width: min(100%, 1100px);
+        display: grid;
+        justify-items: center;
+        gap: clamp(2rem, 6vh, 4rem);
+        text-align: center;
+      }
+
+      .clock-face {
+        width: 100%;
+        display: grid;
+        justify-items: center;
+        gap: clamp(1rem, 3vh, 2rem);
+      }
+
+      .date {
+        margin: 0;
+        color: var(--muted);
+        font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      .time-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        gap: 0.08em;
+        white-space: nowrap;
+      }
+
+      .time {
+        font-size: clamp(5rem, 19vw, 15rem);
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.07em;
+        line-height: 1;
+      }
+
+      .period {
+        width: 2.3em;
+        color: var(--accent);
+        font-size: clamp(1.5rem, 4vw, 3rem);
+        font-weight: 800;
+        text-align: left;
+      }
+
+      .period:empty,
+      .seconds {
+        display: none;
+      }
+
+      .seconds:not(:empty) {
+        display: inline;
+        min-width: 2.2em;
+        color: var(--accent);
+        font-size: clamp(2rem, 7vw, 5rem);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
+      }
+
+      .controls {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.85rem;
+      }
+
+      .size-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+      }
+
+      .size-controls button {
+        min-width: 3.5rem;
+        padding-inline: 0.8rem;
+        font-size: 1.5rem;
+      }
+
+      .size-label {
+        min-width: 4.5rem;
+        color: var(--muted);
+        font-size: 1rem;
+      }
+
+      @media (max-width: 420px) {
+        body {
+          padding: 1rem 0.75rem;
+        }
+
+        .time-row {
+          width: 100%;
+          flex-wrap: wrap;
+        }
+
+        .seconds:not(:empty) {
+          flex-basis: 100%;
+          text-align: center;
+        }
+
+        .controls {
+          gap: 0.6rem;
+        }
+
+        button {
+          min-height: 3.25rem;
+          padding-inline: 0.9rem;
+          font-size: 1rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        button {
+          transition: background-color 150ms ease, border-color 150ms ease;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="clock-face" aria-label="현재 시각">
+        <p class="date" id="date"></p>
+        <div class="time-row">
+          <span class="period" id="period" aria-hidden="true"></span>
+          <time class="time" id="time" aria-label="현재 시각"></time>
+          <span class="seconds" id="seconds" aria-hidden="true"></span>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="시계 설정">
+        <div class="size-controls" aria-label="글자 크기 조절">
+          <button id="smaller" type="button" aria-label="글자 크기 줄이기">가−</button>
+          <span class="size-label" id="size-label">큰 글씨</span>
+          <button id="larger" type="button" aria-label="글자 크기 키우기">가+</button>
+        </div>
+        <button id="format" type="button" aria-pressed="true">24시간</button>
+        <button id="seconds-toggle" type="button" aria-pressed="false">초 표시</button>
+        <button id="fullscreen" type="button">전체 화면</button>
+      </section>
+    </main>
+
+    <script>
+      const timeElement = document.querySelector("#time");
+      const dateElement = document.querySelector("#date");
+      const secondsElement = document.querySelector("#seconds");
+      const periodElement = document.querySelector("#period");
+      const formatButton = document.querySelector("#format");
+      const secondsButton = document.querySelector("#seconds-toggle");
+      const fullscreenButton = document.querySelector("#fullscreen");
+      const sizeLabel = document.querySelector("#size-label");
+      let use24Hour = true;
+      let showSeconds = false;
+      let sizeLevel = 1;
+
+      const timeFormatter = () => new Intl.DateTimeFormat("ko-KR", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: !use24Hour
+      });
+      const dateFormatter = new Intl.DateTimeFormat("ko-KR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        weekday: "long"
+      });
+
+      function updateClock() {
+        const now = new Date();
+        const parts = new Intl.DateTimeFormat("ko-KR", {
+          hour: "numeric",
+          hour12: !use24Hour
+        }).formatToParts(now);
+        const hourPeriod = parts.find((part) => part.type === "dayPeriod")?.value ?? "";
+        const timeParts = timeFormatter().formatToParts(now);
+        const hour = timeParts.find((part) => part.type === "hour")?.value ?? "";
+        const minute = timeParts.find((part) => part.type === "minute")?.value ?? "";
+        const visibleTime = `${hour}:${minute}`;
+
+        timeElement.textContent = visibleTime;
+        timeElement.dateTime = now.toISOString();
+        timeElement.setAttribute("aria-label", `${hourPeriod} ${visibleTime}`.trim());
+        dateElement.textContent = dateFormatter.format(now);
+        secondsElement.textContent = showSeconds
+          ? `:${String(now.getSeconds()).padStart(2, "0")}`
+          : "";
+        periodElement.textContent = use24Hour ? "" : hourPeriod;
+      }
+
+      function setSize(level) {
+        sizeLevel = Math.max(0, Math.min(2, level));
+        const sizes = ["15vw", "19vw", "23vw"];
+        timeElement.style.fontSize = `clamp(4rem, ${sizes[sizeLevel]}, 18rem)`;
+        sizeLabel.textContent = ["보통", "큰 글씨", "아주 큰 글씨"][sizeLevel];
+        document.querySelector("#smaller").disabled = sizeLevel === 0;
+        document.querySelector("#larger").disabled = sizeLevel === 2;
+      }
+
+      formatButton.addEventListener("click", () => {
+        use24Hour = !use24Hour;
+        formatButton.textContent = use24Hour ? "24시간" : "12시간";
+        formatButton.setAttribute("aria-pressed", String(use24Hour));
+        updateClock();
+      });
+
+      secondsButton.addEventListener("click", () => {
+        showSeconds = !showSeconds;
+        secondsButton.setAttribute("aria-pressed", String(showSeconds));
+        updateClock();
+      });
+
+      document.querySelector("#smaller").addEventListener("click", () => setSize(sizeLevel - 1));
+      document.querySelector("#larger").addEventListener("click", () => setSize(sizeLevel + 1));
+
+      fullscreenButton.addEventListener("click", async () => {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        } else {
+          await document.exitFullscreen();
+        }
+      });
+
+      document.addEventListener("fullscreenchange", () => {
+        fullscreenButton.textContent = document.fullscreenElement ? "전체 화면 나가기" : "전체 화면";
+      });
+
+      setSize(sizeLevel);
+      updateClock();
+      window.setInterval(updateClock, 1000);
+    </script>
+  </body>
+</html>
